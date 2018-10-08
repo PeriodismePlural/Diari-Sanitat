@@ -6,9 +6,9 @@ author: "Victòria Oliveres - Diari de la Sanitat"
 
 ## La infermeria a Catalunya
 
-En un reportatge publicat al Diari de la Sanitat i al [Catalunya Plural](http://catalunyaplural.cat/ca/el-deficit-dinfermeres-ja-es-un-problema-greu-a-catalunya/) hem analitzat la situació de les professionals d'infermeria a Catalunya per saber si hi ha dèficit d'aquestes professionals i ho hem comparat amb la situació espanyola i del conjunt de l'OCDE.
+En un reportatge publicat al [Diari de la Sanitat](http://diarisanitat.cat/el-deficit-dinfermeres-ja-es-un-problema-greu-a-catalunya/) i al [Catalunya Plural](http://catalunyaplural.cat/ca/el-deficit-dinfermeres-ja-es-un-problema-greu-a-catalunya/) hem analitzat la situació de les professionals d'infermeria a Catalunya per saber si hi ha dèficit d'aquestes professionals i ho hem comparat amb la situació espanyola i del conjunt de l'OCDE.
 
-#### Importar dades: Nombre d'infermeres per CCAA
+### Importar dades: Nombre d'infermeres per CCAA
 
 Importem les taules de dades entre 2012 i 2017 de infermers col·legiats per comunitat autònoma i per situació laboral (ja que ens interessarà recomptar els col·legiats no jubilats, la categoria disponible mes propera a professionals que exerceixen a Catalunya).
 
@@ -68,7 +68,7 @@ esp12NJ$Any <- 2012
 colnames(esp12NJ) <- c("CCAA", "Total", "Homes", "Dones", "TotalNJ", "HomesNJ", "DonesNJ", "TotalJ", "HomesJ", "DonesJ", "TotalNC", "HomesNC", "DonesNC", "Any")
 ```
 
-#### Ajuntar sèrie anual per Catalunya 
+### Ajuntar sèrie anual per Catalunya 
 
 Filtrem les dades de Catalunya i les unim en una única taula:
 
@@ -77,7 +77,7 @@ library(dplyr)
 cat <- union((filter(esp17NJ, CCAA=="Cataluña")), union((filter(esp16NJ, CCAA=="Cataluña")), union((filter(esp15NJ, CCAA=="Cataluña")), union((filter(esp14NJ, CCAA=="Cataluña")), union((filter(esp13NJ, CCAA=="Cataluña")), (filter(esp12NJ, CCAA=="Cataluña")))))))
 ```
 
-#### Càlculs 
+### Càlculs 
 
 1. Evolució infermeres no jubilades a Catalunya + canvi percentual:
 
@@ -107,7 +107,7 @@ catprov <- esp17NJ %>% filter(CCAA %in% c("Barcelona","Girona","Tarragona","Llei
 *Quatre de cada cinc (79%) infermeres col·legiades no jubilades a Catalunya estan a la província de Barcelona.*
 
 
-#### Ratio d'infermeres per habitant als països de l'OECD
+### Ratio d'infermeres per habitant als països de l'OECD
 
 Importem dades de l'OCDE:
 
@@ -131,7 +131,7 @@ ocderatio16 <- ocderatio %>% filter(TIME==2016) %>% select(LOCATION, TIME, Value
 ```
 
 
-#### Ratio d'infermeres per habitant a les CCAA d'Espanya i a les províncies de Catalunya
+### Ratio d'infermeres per habitant a les CCAA d'Espanya i a les províncies de Catalunya
 
 Importar les dades de població de l' [INE](http://www.ine.es/dyngs/INEbase/operacion.htm?c=Estadistica_C&cid=1254736177011&menu=resultados&secc=1254736195458&idp=1254734710990). 
 
@@ -211,9 +211,15 @@ Ratio espanyola
 (sum(esp17infNJ$TotalNJ)/sum(esp17infNJ$Habitants))*100000
 ```
 
-#### Quantes infermeres falten a Catalunya per arribar a la mitjana de l'OCDE?
+### Quantes infermeres falten a Catalunya per arribar a la mitjana de l'OCDE?
 
-Quantes infermeres hi hauria d'haver per apujar la ràtio fins a 884 (mitjana OCDE)?
+Quantes infermeres hi hauria d'haver per apujar la ràtio fins a 884 (mitjana OCDE)? 
+
+Seguim la fórmula seguent: 
+
+(Ràtio infermeres per 100.000 habitants OCDE / 100.000) * Habitants de Catalunya
+- Total d'infermeres a Catalunya
+= Infermeres que falten per arribar a la ràtio mitjana de l'OCDE
 
 ```{r}
 (((filter(ocderatioavg, TIME==2016)$Avg)/100000)*(filter(catprov, CCAA=="Cataluña")$Habitants))-(filter(catprov, CCAA=="Cataluña")$TotalNJ)
