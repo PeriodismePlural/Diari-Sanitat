@@ -1,0 +1,221 @@
+---
+title: "R Notebook"
+output: html_notebook
+author: "Victòria Oliveres - Diari de la Sanitat"
+---
+
+## La infermeria a Catalunya
+
+En un reportatge publicat al Diari de la Sanitat i al [Catalunya Plural](http://catalunyaplural.cat/ca/el-deficit-dinfermeres-ja-es-un-problema-greu-a-catalunya/) hem analitzat la situació de les professionals d'infermeria a Catalunya per saber si hi ha dèficit d'aquestes professionals i ho hem comparat amb la situació espanyola i del conjunt de l'OCDE.
+
+#### Importar dades: Nombre d'infermeres per CCAA
+
+Importem les taules de dades entre 2012 i 2017 de infermers col·legiats per comunitat autònoma i per situació laboral (ja que ens interessarà recomptar els col·legiats no jubilats, la categoria disponible mes propera a professionals que exerceixen a Catalunya).
+
+Les dades les importem directament de [l'Estadística de professionals sanitaris col·legiats de l'INE](http://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736176781&menu=resultados&idp=1254735573175)
+
+```{r}
+#2017
+esp17NJ <- read_delim("https://www.ine.es/jaxi/files/_px/es/csv_sc/t15/p416/a2017/l0/s08004.csv_sc?nocab=1", delim=";", skip=6)
+esp17NJ <- esp17NJ[1:13] 
+esp17NJ <- slice(esp17NJ, 1:63)
+esp17NJ$Any <- 2017
+colnames(esp17NJ) <- c("CCAA", "Total", "Homes", "Dones", "TotalNJ", "HomesNJ", "DonesNJ", "TotalJ", "HomesJ", "DonesJ", "TotalNC", "HomesNC", "DonesNC", "Any")
+```
+
+```{r}
+#2016
+esp16NJ <- read_delim("https://www.ine.es/jaxi/files/_px/es/csv_sc/t15/p416/a2016/l0/s08004.csv_sc?nocab=1", delim=";", skip=6)
+esp16NJ <- esp16NJ[1:13] 
+esp16NJ <- slice(esp16NJ, 1:63)
+esp16NJ$Any <- 2016
+colnames(esp16NJ) <- c("CCAA", "Total", "Homes", "Dones", "TotalNJ", "HomesNJ", "DonesNJ", "TotalJ", "HomesJ", "DonesJ", "TotalNC", "HomesNC", "DonesNC", "Any")
+```
+
+```{r}
+#2015
+esp15NJ <- read_delim("https://www.ine.es/jaxi/files/_px/es/csv_sc/t15/p416/a2015/l0/s08004.csv_sc?nocab=1", delim=";", skip=6)
+esp15NJ <- esp15NJ[1:13] 
+esp15NJ <- slice(esp15NJ, 1:63)
+esp15NJ$Any <- 2015
+colnames(esp15NJ) <- c("CCAA", "Total", "Homes", "Dones", "TotalNJ", "HomesNJ", "DonesNJ", "TotalJ", "HomesJ", "DonesJ", "TotalNC", "HomesNC", "DonesNC", "Any")
+```
+
+```{r}
+#2014
+esp14NJ <- read_delim("https://www.ine.es/jaxi/files/_px/es/csv_sc/t15/p416/a2014/l0/s08004.csv_sc?nocab=1", delim=";", skip=6)
+esp14NJ <- esp14NJ[1:13] 
+esp14NJ <- slice(esp14NJ, 1:63)
+esp14NJ$Any <- 2014
+colnames(esp14NJ) <- c("CCAA", "Total", "Homes", "Dones", "TotalNJ", "HomesNJ", "DonesNJ", "TotalJ", "HomesJ", "DonesJ", "TotalNC", "HomesNC", "DonesNC", "Any")
+```
+
+```{r}
+#2013
+esp13NJ <- read_delim("https://www.ine.es/jaxi/files/_px/es/csv_sc/t15/p416/a2013/l0/s08004.csv_sc?nocab=1", delim=";", skip=6)
+esp13NJ <- esp13NJ[1:13] 
+esp13NJ <- slice(esp13NJ, 1:63)
+esp13NJ$Any <- 2013
+colnames(esp13NJ) <- c("CCAA", "Total", "Homes", "Dones", "TotalNJ", "HomesNJ", "DonesNJ", "TotalJ", "HomesJ", "DonesJ", "TotalNC", "HomesNC", "DonesNC", "Any")
+```
+
+```{r}
+#2012
+esp12NJ <- read_delim("https://www.ine.es/jaxi/files/_px/es/csv_sc/t15/p416/a2012/l0/s07004.csv_sc?nocab=1", delim=";", skip=6)
+esp12NJ <- esp12NJ[1:13] 
+esp12NJ <- slice(esp12NJ, 1:63)
+esp12NJ$Any <- 2012
+colnames(esp12NJ) <- c("CCAA", "Total", "Homes", "Dones", "TotalNJ", "HomesNJ", "DonesNJ", "TotalJ", "HomesJ", "DonesJ", "TotalNC", "HomesNC", "DonesNC", "Any")
+```
+
+#### Ajuntar sèrie anual per Catalunya 
+
+Filtrem les dades de Catalunya i les unim en una única taula:
+
+```{r}
+library(dplyr)
+cat <- union((filter(esp17NJ, CCAA=="Cataluña")), union((filter(esp16NJ, CCAA=="Cataluña")), union((filter(esp15NJ, CCAA=="Cataluña")), union((filter(esp14NJ, CCAA=="Cataluña")), union((filter(esp13NJ, CCAA=="Cataluña")), (filter(esp12NJ, CCAA=="Cataluña")))))))
+```
+
+#### Càlculs 
+
+1. Evolució infermeres no jubilades a Catalunya + canvi percentual:
+
+```{r}
+catevolucioNJ <- cat %>% arrange(desc(Any)) %>% select(TotalNJ, Any) %>% mutate(PctAnyAnterior = (TotalNJ/lead(TotalNJ) - 1) * 100) %>% mutate(Pct2012 = ((TotalNJ-TotalNJ[6])/TotalNJ[6] * 100))
+```
+
+*Entre 2012 i 2017 el nombre d’infermers col·legiats i no jubilats va augmentar un 7%, de 42.925 a 45.995.*
+
+
+2. Evolució infermeres no jubilades a Catalunya per sexe + distribució percentual:
+
+```{r}
+catsexeNJ <- cat %>% arrange(desc(Any)) %>% select(DonesNJ, HomesNJ, TotalNJ, Any) %>% mutate(ptgdones = DonesNJ/TotalNJ *100) %>% mutate(ptghomes = HomesNJ/TotalNJ *100)
+```
+
+*Un 88% de les infermeres col·legiades no jubilades són dones. Aquest percentatge només ha baixat un punt des del 2012.*
+
+
+3. Evolució infermeres no jubilades per provincia Catalunya + distribució percentual:
+
+```{r}
+library(dplyr)
+catprov <- esp17NJ %>% filter(CCAA %in% c("Barcelona","Girona","Tarragona","Lleida","Cataluña")) %>% select(CCAA, Any, TotalNJ) %>% mutate(ptg=TotalNJ/TotalNJ[1] *100)
+```
+
+*Quatre de cada cinc (79%) infermeres col·legiades no jubilades a Catalunya estan a la província de Barcelona.*
+
+
+#### Ratio d'infermeres per habitant als països de l'OECD
+
+Importem dades de l'OCDE:
+
+```{r}
+ocderatio <- read_csv("https://stats.oecd.org/sdmx-json/data/DP_LIVE/.NURSE.../OECD?contentType=csv&detail=code&separator=comma&csv-lang=en")
+```
+
+Calculem la mitjana de la ratio dels diferents països per any. La ràtio que ens dona l'OCDE és d'infermeres per 1.000 habitants, per tant l'hen de multiplicar per 100 ja que utilitzarem la ràtio per 100.000 habitants. 
+
+```{r}
+library(dplyr)
+ocderatioavg <- ocderatio %>% group_by(TIME) %>% summarise(Avg=mean(Value)*100)
+```
+
+*El 2016 la ratio mitjana als països de l'OCDE era de 844 infermeres per 100.000 habitants*
+
+Ens interessen les ratios de l'any 2016, ja que són les últimes disponibles per la majoria de països:
+
+```{r}
+ocderatio16 <- ocderatio %>% filter(TIME==2016) %>% select(LOCATION, TIME, Value)
+```
+
+
+#### Ratio d'infermeres per habitant a les CCAA d'Espanya i a les províncies de Catalunya
+
+Importar les dades de població de l' [INE](http://www.ine.es/dyngs/INEbase/operacion.htm?c=Estadistica_C&cid=1254736177011&menu=resultados&secc=1254736195458&idp=1254734710990). 
+
+Primer per províncies. En aquest cas és difícil obtenir l'enllaç de descàrrega així que farem un scrapping de la taula:
+
+```{r}
+#2017 Províncies
+library("rvest")
+url <- "http://www.ine.es/jaxiT3/Datos.htm?t=2852"
+esphab17 <- url %>%
+  html() %>%
+  html_nodes(xpath='//*[@id="tablaDatos"]') %>%
+  html_table()
+esphab17 <- esphab17[[1]]
+colnames(esphab17) <- c("CCAA.Provincia", "Habitants")
+esphab17$Habitants <- sub("\\.", "", esphab17$Habitants)
+esphab17$Habitants <- sub("\\.", "", esphab17$Habitants)
+esphab17$Habitants <- as.numeric(esphab17$Habitants)
+```
+
+Ara per Comunitats Autònomes:
+```{r}
+#2017 CCAA
+library("rvest")
+url <- "http://www.ine.es/jaxiT3/Datos.htm?t=2853"
+esphabCCAA17 <- url %>%
+  html() %>%
+  html_nodes(xpath='//*[@id="tablaDatos"]') %>%
+  html_table()
+esphabCCAA17 <- esphabCCAA17[[1]]
+colnames(esphabCCAA17) <- c("CCAA.Provincia", "Habitants")
+esphabCCAA17$Habitants <- sub("\\.", "", esphabCCAA17$Habitants)
+esphabCCAA17$Habitants <- sub("\\.", "", esphabCCAA17$Habitants)
+esphabCCAA17$Habitants <- as.numeric(esphabCCAA17$Habitants)
+esphabCCAA17$CCAA.Provincia <- substring(esphabCCAA17$CCAA.Provincia, 4)
+esphabCCAA17 <- esphabCCAA17 %>% filter(!(CCAA.Provincia %in% c("", "al Nacional")))
+```
+
+
+**Ratio per provincies catalanes:**
+
+Primer cal filtrar les 4 províncies de Catalunya de la taula d'habitants
+```{r}
+library(dplyr)
+cathab17 <- esphab17 %>% filter(CCAA.Provincia %in% c("08 Barcelona","17 Girona","43 Tarragona","25 Lleida"))
+cathab17$CCAA.Provincia <- substring(cathab17$CCAA.Provincia, 4)
+```
+
+Afegir-li els habitants de Catalunya de la taula de habitants per CCAA
+```{r}
+cathab17 <- union(cathab17, filter(esphabCCAA17, CCAA.Provincia=="Cataluña"))
+```
+
+Calcular la ràtio
+```{r}
+catprov <- full_join(catprov, cathab17, by= c("CCAA"="CCAA.Provincia"))
+catprov <- catprov %>% mutate(Ratio=(TotalNJ/Habitants)*100000)
+```
+
+
+**Ratio per CCAA espanyoles:**
+
+Filtrar les dades que volem d'infermeres. En aquest cas, les dades d'infermeres col·legiades no jubilades:
+```{r}
+esp17infNJ <- esp17NJ %>% select(CCAA, TotalNJ)
+esp17infNJ$CCAA <- if_else(esp17infNJ$CCAA=="Castilla-La Mancha", "Castilla - La Mancha", esp17infNJ$CCAA)
+```
+
+Ajuntar nombre d'infermeres i habitants i calcular la ràtio:
+```{r}
+esp17infNJ <- left_join(esphabCCAA17, esp17infNJ, by= c("CCAA.Provincia"="CCAA"))
+esp17infNJ <- esp17infNJ %>% mutate(Ratio=(TotalNJ/Habitants)*100000)
+```
+
+Ratio espanyola
+```{r}
+(sum(esp17infNJ$TotalNJ)/sum(esp17infNJ$Habitants))*100000
+```
+
+#### Quantes infermeres falten a Catalunya per arribar a la mitjana de l'OCDE?
+
+Quantes infermeres hi hauria d'haver per apujar la ràtio fins a 884 (mitjana OCDE)?
+
+```{r}
+(((filter(ocderatioavg, TIME==2016)$Avg)/100000)*(filter(catprov, CCAA=="Cataluña")$Habitants))-(filter(catprov, CCAA=="Cataluña")$TotalNJ)
+```
+
