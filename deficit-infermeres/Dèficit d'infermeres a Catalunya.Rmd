@@ -217,9 +217,7 @@ Quantes infermeres hi hauria d'haver per apujar la ràtio fins a 884 (mitjana OC
 
 Seguim la fórmula seguent: 
 
-(Ràtio infermeres per 100.000 habitants OCDE / 100.000) * Habitants de Catalunya
-- Total d'infermeres a Catalunya
-= Infermeres que falten per arribar a la ràtio mitjana de l'OCDE
+(Ràtio infermeres per 100.000 habitants OCDE / 100.000) * Habitants de Catalunya - Total d'infermeres a Catalunya = Infermeres que falten per arribar a la ràtio mitjana de l'OCDE
 
 ```{r}
 (((filter(ocderatioavg, TIME==2016)$Avg)/100000)*(filter(catprov, CCAA=="Cataluña")$Habitants))-(filter(catprov, CCAA=="Cataluña")$TotalNJ)
